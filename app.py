@@ -2,39 +2,36 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 import io
-import cv2
 
-st.title("👨‍🎓 学生用復号アプリ（QR自動読み取り）")
+st.title("👨‍🎓 学生用アプリ（シェア復号）")
 
-shareA_file = st.file_uploader("教員の ShareA.png を選択", type=["png"])
-shareB_file = st.file_uploader("自分の ShareB.png を選択", type=["png"])
+st.write("教員から配布されたシェアAと自分のシェアBをアップロードして重ねます。")
+
+shareA_file = st.file_uploader("シェアAをアップロード（教員提供）", type=["png"])
+shareB_file = st.file_uploader("シェアBをアップロード（自分用）", type=["png"])
+
+def combine_shares(imgA, imgB):
+    """2つのシェア画像を重ねて復号"""
+    # サイズを揃える（大きい方にリサイズ）
+    w = max(imgA.width, imgB.width)
+    h = max(imgA.height, imgB.height)
+    imgA = imgA.resize((w, h))
+    imgB = imgB.resize((w, h))
+
+    arrA = np.array(imgA.convert("1"), dtype=np.uint8)
+    arrB = np.array(imgB.convert("1"), dtype=np.uint8)
+
+    combined = np.minimum(arrA, arrB)  # 黒が出る方を優先
+    return Image.fromarray(combined*255)
 
 if shareA_file and shareB_file:
-    imgA = Image.open(shareA_file).convert("L")
-    imgB = Image.open(shareB_file).convert("L")
-    imgB = imgB.resize(imgA.size, Image.NEAREST)
+    imgA = Image.open(shareA_file)
+    imgB = Image.open(shareB_file)
 
-    arrA = np.array(imgA)
-    arrB = np.array(imgB)
-    binA = 1 - (arrA // 255)
-    binB = 1 - (arrB // 255)
-
-    reconstructed = np.bitwise_xor(binA, binB)
-    original = 1 - reconstructed
-    decoded_img = Image.fromarray((original*255).astype(np.uint8))
-    st.image(decoded_img, caption="復号結果", width=300)
+    combined_img = combine_shares(imgA, imgB)
+    st.image(combined_img, caption="復号結果（重ね合わせた画像）", width=300)
 
     # ダウンロード
     buf = io.BytesIO()
-    decoded_img.save(buf, format="PNG")
+    combined_img.save(buf, format="PNG")
     st.download_button("📥 復号画像をダウンロード", buf.getvalue(), "decoded.png")
-
-    # OpenCVでQRコード読み取り
-    cv_img = np.array(decoded_img)
-    qr_detector = cv2.QRCodeDetector()
-    data, bbox, _ = qr_detector.detectAndDecode(cv_img)
-    if data:
-        st.success(f"QRコード読み取り成功！\nフォームURL: {data}")
-        st.markdown(f"[📄 フォームに移動]({data})")
-    else:
-        st.warning("QRコードの読み取りに失敗しました。")
