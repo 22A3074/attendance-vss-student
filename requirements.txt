@@ -1,4 +1,5 @@
 streamlit
 pillow
 numpy
+pyzbar
 opencv-python-headless
