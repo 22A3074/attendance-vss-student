@@ -2,5 +2,4 @@ streamlit
 pillow
 numpy
 pyzbar
-gspread
-oauth2client
+
