@@ -1,5 +1,5 @@
-streamlit>=1.25.0
-numpy
-opencv-python-headless
-requests
+streamlit
 pillow
+numpy
+requests
+opencv-python
