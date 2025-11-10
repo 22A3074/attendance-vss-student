@@ -1,6 +1,6 @@
 streamlit
-Pillow
+pillow
 numpy
-opencv-python-headless
+opencv-python
 gspread
-google-auth
+oauth2client
