@@ -1,4 +1,6 @@
-opencv-python
-numpy
-pillow
 streamlit
+pillow
+numpy
+opencv-python
+gspread
+oauth2client
