@@ -1,6 +1,6 @@
 streamlit
 pillow
 numpy
-opencv-python
+pyzbar
 gspread
 oauth2client
