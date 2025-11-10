@@ -1,18 +1,13 @@
 import streamlit as st
 from PIL import Image
 import numpy as np
-import io
 from pyzbar.pyzbar import decode
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+import pandas as pd
 from datetime import datetime
+import io
+import os
 
-st.title("👨‍🎓 学生用 VSS 出席アプリ（OpenCV 不使用）")
-
-# --- Google スプレッドシート設定 ---
-st.sidebar.header("Google スプレッドシート設定")
-sheet_key = st.sidebar.text_input("スプレッドシートキー（URLの/d/.../部分）")
-credentials_file = st.sidebar.file_uploader("サービスアカウント JSON", type=["json"])
+st.title("👨‍🎓 学生用 VSS 出席アプリ（CSV版）")
 
 # --- ファイルアップロード ---
 shareA_file = st.file_uploader("教員の ShareA.png を選択", type=["png"])
@@ -42,18 +37,20 @@ if shareA_file and shareB_file and student_id:
         st.success(f"QRコード読み取り成功！\nフォームURL: {qr_data}")
     else:
         st.warning("QRコードの読み取りに失敗しました。")
-        qr_data = None
+        qr_data = "読み取り失敗"
 
-    # Google スプレッドシートに書き込み
-    if qr_data and sheet_key and credentials_file:
-        credentials_file.seek(0)
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(
-            json.load(credentials_file),
-            ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        )
-        gc = gspread.authorize(creds)
-        sh = gc.open_by_key(sheet_key)
-        worksheet = sh.sheet1
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        worksheet.append_row([student_id, timestamp, qr_data])
-        st.success("出席が記録されました ✅")
+    # CSV に出席記録
+    csv_file = "attendance.csv"
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    row = {"学生ID": student_id, "日時": timestamp, "QR_URL": qr_data}
+
+    # 既存CSVがあれば読み込み、新規なら作成
+    if os.path.exists(csv_file):
+        df = pd.read_csv(csv_file)
+        df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
+    else:
+        df = pd.DataFrame([row])
+
+    df.to_csv(csv_file, index=False, encoding="utf-8")
+    st.success("出席がCSVに記録されました ✅")
+    st.download_button("📥 出席CSVをダウンロード", df.to_csv(index=False).encode("utf-8"), "attendance.csv")
