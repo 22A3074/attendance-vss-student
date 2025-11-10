@@ -12,7 +12,7 @@ st.set_page_config(page_title="👨‍🎓 学生用復号アプリ（出席送�
 st.title("👨‍🎓 学生用復号アプリ（出席が自動記録されます）")
 
 # ---- Google Sheets 設定 ----
-SPREADSHEET_ID = "https://docs.google.com/spreadsheets/d/15pSdjTDIiYHO8AX6EzPXSM0J4tYMYFsvsTbKjIyBgO0/edit?gid=0#gid=0"
+SPREADSHEET_ID = "15pSdjTDIiYHO8AX6EzPXSM0J4tYMYFsvsTbKjIyBgO0"
 
 scopes = ["https://www.googleapis.com/auth/spreadsheets"]
 credentials = Credentials.from_service_account_file("credentials.json", scopes=scopes)
